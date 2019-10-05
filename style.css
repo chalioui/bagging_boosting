@@ -1,0 +1,47 @@
+.header-panel {
+    /* coluer de lille 1 */
+    background-color: #AE2573;
+    /* Bibl lille 1 */
+    background-image : url("test.gif") ;
+    /* Background image doesn't tile */
+    background-repeat: no-repeat;
+    /* This is what makes the background image rescale based
+     on the container's size */
+    background-size: cover;
+    /* Background image is centered vertically and horizontally at all times */
+    background-position: center center;
+    min-height: 155px;
+    position: relative;
+    z-index: 3;
+}
+
+
+.menu ul li a {
+    color: #AE2573;
+    text-decoration: none;
+    font-size: 18px;
+    
+}
+.menu ul li {
+    list-style: none;
+    padding: 20px 0 20px 50px;
+    font-size: 15px;
+    font-weight: normal;
+    cursor: pointer;
+
+
+}
+
+.menu ul li.active {
+    background-color: #dedede;
+    position: relative;
+    box-shadow: 0 0px 10px ;
+}
+
+
+.not-active {
+  pointer-events: none;
+  cursor: default;
+  text-decoration: none;
+  color: black;
+}
