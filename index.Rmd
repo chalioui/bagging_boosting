@@ -15,7 +15,7 @@ output:
 ---
 
 
-```{r knitr_init, echo=FALSE, results="asis", cache=FALSE}
+```{r knitr_init, echo=FALSE}
 library(knitr)
 library(rmdformats)
 library(shinyparticles)
@@ -30,6 +30,8 @@ opts_chunk$set(echo = FALSE,
                warning = FALSE)
 opts_knit$set(width = 75)
 particles("conf.json")
+
+set.seed(123)
 ```
 
 <link href="https://use.fontawesome.com/releases/v5.0.7/css/all.css" rel="stylesheet">
@@ -95,7 +97,7 @@ library(highcharter)
 
 highchart() %>% 
   hc_chart(type = "pie") %>% 
-  hc_add_series(data1625$Clived, innerSize='50%') %>% 
+  hc_add_series(data1625$Clived, innerSize='80%') %>% 
   hc_plotOptions(
     pie=list(
       allowPointSelect= TRUE,
@@ -182,10 +184,10 @@ library(rpart) # construction de l'arbre
 library(sparkline) # dependance pour l'affichage de l'arbre
 library(visNetwork) # affichage de l'arbre 
 
-
+set.seed(123)
 model1 <- rpart(data.Train$Clived ~., data = data.Train)
 
-visTree(model1,legend=FALSE,export=FALSE) # on affiche l'arbre 
+visTree(model1,legend=FALSE,export=FALSE ) # on affiche l'arbre 
 
 ```
 
@@ -205,7 +207,7 @@ Le taux d'erreur est de `r  round(taux.erreur(preds,data.Test$Clived),4)` !
 On construit un arbre de décision profond, en modifiant les options `maxdepth`, `minbucket` et `cp`. 
 
 ```{r echo=TRUE}
-
+set.seed(123)
 options.profond =list(maxdepth=20, minbucket= 1, cp = 0 )
 model.profond <- rpart(data.Train$Clived ~., data = data.Train, control =options.profond)
 
@@ -229,6 +231,7 @@ Le taux d'erreur est de `r  round(taux.erreur(preds.profond ,data.Test$Clived),4
 On construit un arbre de décision de niveau 1 (avec seulement 1 noeud) 
 
 ```{r}
+set.seed(123)
 options.stump =list(maxdepth=1, minbucket= 30, cp = 0 )
 model.stump <- rpart(data.Train$Clived ~., data = data.Train, control =options.stump)
 
@@ -315,12 +318,12 @@ ci-dessous.
 
 ***********
 
- Soit $x_0$ à prévoir et  
- $z = \{(x_1, y_1), . . . ,(x_n, y_n)\}$ un échantillon  
- **for** $b=1$ à $B$ **do**  
+Soit $x_0$ à prévoir et  
+$z = \{(x_1, y_1), . . . ,(x_n, y_n)\}$ un échantillon  
+> **for** $b=1$ à $B$ **do**  
  
- + Tirer un échantillon bootstrap $z^*_b$  
- + Estimer $\hat{f}_{z_b}(x_0)$  sur l’échantillon bootstrap.
+>> + Tirer un échantillon bootstrap $z^*_b$  
+>> + Estimer $\hat{f}_{z_b}(x_0)$  sur l’échantillon bootstrap.
  
  **end for**  
 
@@ -343,8 +346,8 @@ On construit un modèle de bagging à l’aide de la fonction bagging avec `mfin
 les autres réglages par défaut.
 
 ```{r echo=TRUE}
+set.seed(123)
 model.bagg <- bagging(Clived ~., data = data.Train, mfinal = 20)
-
 ```
 
 
@@ -353,6 +356,7 @@ On calcule le taux d’erreur sur la base de test.
 
 
 ```{r echo=TRUE}
+
 preds.bagg <- predict(model.bagg, newdata = data.Test)$class # on calcul d'abord les prédictions de l'arbre
 t_bag1<-taux.erreur(preds.bagg ,data.Test$Clived)
 ```
@@ -365,6 +369,7 @@ Le taux d'erreur est de `r  round(taux.erreur(preds.bagg,data.Test$Clived),4)` !
 On construit un modèle de bagging avec 20 arbres de décision à 1 noeud. 
 
 ```{r echo=TRUE}
+set.seed(123)
 model.bagg.stump <- bagging(Clived ~., data = data.Train, mfinal = 20, control = options.stump)
 ```
 
@@ -384,6 +389,7 @@ Le taux d'erreur est de `r  round(taux.erreur(preds.bagg.stump ,(data.Test$Clive
 
 
 ```{r echo=TRUE}
+set.seed(123)
 model.bagg.prof <- bagging(Clived ~., data = data.Train, mfinal = 20, control = options.profond)
 
 ```
@@ -436,7 +442,7 @@ On test maintenant l'effet du nombre d'arbres, en calculant le taux d’erreur m
 
 
 ```{r  echo=TRUE}
-
+set.seed(123)
 compar <- replicate(10,
           sapply( c(1,2,5,10,20,50), function(x) taux.erreur(predict(bagging(Clived ~., data = data.Train, mfinal = x, control = options.profond), newdata = data.Test)$class ,(data.Test$Clived))),simplify = FALSE
 ) 
@@ -474,10 +480,10 @@ Le bagging est appliqué à des arbres binaires de décision en ajoutant un tira
 
  Soit $x_0$ à prévoir et  
  $z = \{(x_1, y_1), . . . ,(x_n, y_n)\}$ un échantillon  
- **for** $b=1$ à $B$ **do**  
+> **for** $b=1$ à $B$ **do**  
  
- + Tirer un échantillon bootstrap $z^*_b$  
- + Estimer un arbre sur cet échantillon avec _randomisation_ des variables
+>> + Tirer un échantillon bootstrap $z^*_b$  
+>> + Estimer un arbre sur cet échantillon avec _randomisation_ des variables
  
  **end for**  
 
@@ -529,20 +535,21 @@ hchart(d, "column", hcaes(x = "mtry", y = "tx_err" ), colorByPoint= TRUE) %>%
 ```
 
 
-la valeur optimal de `mtry`$=1$, on voit clairemet l'impact de nomrbre de variables aléatoires choisit pendant la construction de chaque arbre, _un faible_ nombre implique des arbres qui sont peu  corrélés ce qui entraîne une baisse de la variance globale après aggrégation.
+la valeur optimal de `mtry`$=$ `r which.min(d$tx_err)`, on voit clairemet l'impact de nomrbre de variables aléatoires choisit pendant la construction de chaque arbre, _un faible_ nombre implique des arbres qui sont peu corrélés ce qui entraîne une baisse de la variance globale après aggrégation.
 
 
 <p style="color:#AE2573; font-size:200%;"> 18 </p>
 
 
+On va maintenant tester l’effet du nombre d’arbres en traçant l’évolution du taux d’erreur moyen calculé sur $10$ forêts
+aléatoires, chacune construite avec la valeur optimale de `mtry`$=2$, en fonction de `ntree`, avec `ntree` égal à 1, 2, 5, 10, 20, 50, 100, 200 ou 500.
 
-
-```{r echo=TRUE, eval=FALSE, include=FALSE}
+```{r echo=TRUE}
 set.seed(123)
 
 library(dplyr)
 check_ntree <- replicate(10,
-          sapply( c(1, 2, 5, 10, 20, 50, 100, 200, 500), function(x) round(taux.erreur(predict(randomForest(Clived ~., data = data.Train,ntree=x,mtry=1), newdata = data.Test) ,(data.Test$Clived)),4) ),simplify = FALSE
+          sapply( c(1, 2, 5, 10, 20, 50, 100, 200, 500), function(x) round(taux.erreur(predict(randomForest(Clived ~., data = data.Train,ntree=x,mtry=2), newdata = data.Test) ,(data.Test$Clived)),4) ),simplify = FALSE
 ) 
 
 l <- data.frame(ntree= c("1","2","5","10","20","50","100","200","500"), 
@@ -550,18 +557,49 @@ l <- data.frame(ntree= c("1","2","5","10","20","50","100","200","500"),
 
 
 
-hchart(l, "column", hcaes(x = "ntree", y = "tx_err" ), colorByPoint= TRUE) %>% 
-  hc_plotOptions(
-    column= list(
-       dataLabels= list(
-                enabled= TRUE
-       )
+library(apexcharter) # dataviz gratuite 
+
+apexchart(ax_opts = list(
+  chart = list(
+    type = "line"
+  ),
+  stroke = list(
+    curve = "smooth"
+  ),
+  grid = list(
+    borderColor = "#e7e7e7",
+    row = list(
+      colors = c("#f3f3f3", "transparent"),
+      opacity = 0.5
     )
-  ) 
+  ),
+  
+  fill=list(
+      type= 'gradient'
+            ),
+  dataLabels = list(
+    enabled = TRUE
+  ),
+  markers = list(style = "inverted", size = 6),
+  series = list(
+    list(
+      name = "taux d'erreur",
+      data = l$tx_err
+    )
+  ),
+  title = list(
+    text = "Taux d'erreur moyen en fonction de ntree ",
+    align = "left"
+  ),
+  xaxis = list(
+    categories = l$ntree
+  ),
+  yaxis = list(
+    show=FALSE
+  )
+))
 
 ```
-
-
 
 
 
@@ -585,27 +623,31 @@ obtient exactement les mêmes résultats.
 
 On construit un modèle basé sur l'algorithme `Adaboost`, avec 20 itérations :
 
-```{r}
+```{r echo=TRUE}
 library(adabag)
+set.seed(123)
 adaboost <- boosting(Clived ~., data=data.Train,  boos = TRUE,mfinal=20)
 t_boost_1<-taux.erreur(predict(adaboost,newdata = data.Test)$class,data.Test$Clived)
 ```
 
-Son taux d'erreur est : `{r t_boost_1}`
+Son taux d'erreur est :  `r  round(t_boost_1,4)`
 
 <p style="color:#AE2573; font-size:200%;"> 20 </p>
 
-On construit le meme  modèle mais cette fois à 1 noeud 
+On construit le même  modèle mais cette fois à 1 noeud 
 
 
-```{r }
+```{r echo=TRUE}
+set.seed(123)
 t_boost_2<-taux.erreur(predict(boosting(Clived ~., data=data.Train,  boos = TRUE,mfinal=20,control=rpart.control(maxdepth=1)),newdata = data.Test)$class,data.Test$Clived)
 ```
 
 <p style="color:#AE2573; font-size:200%;"> 21 </p>
 
+On fait de même en utilisant cette fois des arbres de décision profonds.
 
-```{r }
+```{r echo=TRUE}
+set.seed(123)
 t_boost_3<-taux.erreur(predict(boosting(Clived ~., data=data.Train,  boos = TRUE,mfinal=20,control=rpart.control(maxdepth=20)),newdata = data.Test)$class,data.Test$Clived)
 ```
 
@@ -659,7 +701,7 @@ library(xgboost)
 L’encodage one-hot:
 
 
-```{r}
+```{r echo=TRUE}
 new_tr <- model.matrix(~.+0,data = data.Train[,2:9]) 
 new_ts <- model.matrix(~.+0,data = data.Test[,2:9])
 
@@ -670,7 +712,7 @@ new_ts <- model.matrix(~.+0,data = data.Test[,2:9])
 
 Création de deux objets contenant respictivement la base d'apprentissage etla base  de test 
 
-```{r}
+```{r echo=TRUE}
 #convert factor to numeric 
 labels <- as.numeric(data.Train$Clived)-1
 ts_label <- as.numeric(data.Test$Clived)-1
@@ -678,7 +720,7 @@ ts_label <- as.numeric(data.Test$Clived)-1
 
 
 
-```{r}
+```{r echo=TRUE}
 dtrainXG <- xgb.DMatrix(data = new_tr,label = labels) 
 dtestXG <- xgb.DMatrix(data = new_ts,label   =ts_label)
 w<-list(train=dtrainXG,test=dtestXG)
@@ -692,45 +734,271 @@ Application d'algorithme de gradient boosting adapté à la classification binai
 
 
 ```{r echo=TRUE}
+set.seed(123)
 xgb.fit=xgb.train(nrounds=20,data=dtrainXG,watchlist=w,objective = "binary:logistic", verbose = FALSE, params = list(eval_metric="error"))
-xgb.fit
 ```
 
 le taux d'erreur
 
 ```{r echo=TRUE}
-min(xgb.fit$evaluation_log$test_error)
+taux.erreur(ypred = ifelse(predict(xgb.fit, dtestXG)>=0.5,1,0), yobs = ts_label)
 ```
 
 <p style="color:#AE2573; font-size:200%;"> 27 </p>
 
-Test de l'effet des parametresde l'algorithme :
+Test de l'effet des paramètres l'algorithme :
 
-+ maxdepth (1,5,10,20):
+
+
++ On évalue l'effet du paramètre  `maxdepth`: 
+
+
+
+
+```{r echo=TRUE}
+set.seed(123)
+max_depth_s= 1:20
+
+
+eff_depth<-sapply( max_depth_s ,
+                   function(x) taux.erreur(
+                     ypred =ifelse(predict(xgb.train(nrounds=100,
+                                                     data=dtrainXG,
+                                                     watchlist=w,
+                                                     objective = "binary:logistic",
+                                                     verbose = FALSE,
+                                                     params = list(max_depth=x)),
+                                           dtestXG)>=0.5,1,0), yobs = ts_label   ) )
+
+
+
+apexchart(ax_opts = list(
+  chart = list(
+    type = "line",
+    height= 700
+  ),
+  stroke = list(
+    curve = "smooth"
+  ),
+  grid = list(
+    borderColor = "#e7e7e7",
+    row = list(
+      colors = c("#f3f3f3", "transparent"),
+      opacity = 0.5
+    )
+  ),
+  
+  fill=list(
+      type= 'gradient'
+            ),
+  dataLabels = list(
+    enabled = TRUE
+  ),
+  markers = list(style = "inverted", size = 6),
+  series = list(
+    list(
+      name = "taux d'erreur",
+      data = round(eff_depth,4)
+    )
+  ),
+  title = list(
+    text = "Taux d'erreur en fonction de max_depth ",
+    align = "left"
+  ),
+  xaxis = list(
+    categories =max_depth_s
+  ),
+  yaxis = list(
+    min=  min(eff_depth),
+    max= max(eff_depth),
+     show= FALSE
+  )
+))
+```
+
+
++ `eta` le taux d'apprentissage en gardant la valuer optimale de `max_depth` précedente 
 
 
 
 ```{r echo=TRUE}
 
 
-library(highcharter)
-eff_depth<-sapply( c(1,2,5,10,20,50), function(x) (xgb.fit=xgb.train(nrounds=20,data=dtrainXG,watchlist=w,objective = "binary:logistic",maxdepth= x, verbose = FALSE, params = list(eval_metric="error"))$evaluation_log$test_error))
+set.seed(123)
+eta_s= seq(0.1,1,by = 0.05)
 
 
+eff_eta<-sapply( eta_s ,
+                   function(x) taux.erreur(
+                     ypred =ifelse(predict(xgb.train(nrounds=100,
+                                                     data=dtrainXG,
+                                                     watchlist=w,
+                                                     objective = "binary:logistic",
+                                                     verbose = FALSE,
+                                                     params = list(eta=x, max_depth=10)),
+                                           dtestXG)>=0.5,1,0), yobs = ts_label   ) )
+
+
+
+apexchart(ax_opts = list(
+  chart = list(
+    type = "line"
+  ),
+  stroke = list(
+    curve = "smooth"
+  ),
+  grid = list(
+    borderColor = "#e7e7e7",
+    row = list(
+      colors = c("#f3f3f3", "transparent"),
+      opacity = 0.5
+    )
+  ),
+  
+  fill=list(
+      type= 'gradient'
+            ),
+  dataLabels = list(
+    enabled = TRUE
+  ),
+  markers = list(style = "inverted", size = 6),
+  series = list(
+    list(
+      name = "taux d'erreur",
+      data = round(eff_eta,4)
+    )
+  ),
+  title = list(
+    text = "Taux d'erreur en fonction de eta ",
+    align = "left"
+  ),
+  xaxis = list(
+    categories =eta_s
+  ),
+  yaxis = list(
+     min= min(eff_eta),
+     max=max(eff_eta),
+     show= FALSE
+  )
+))
 ```
 
-```{r echo=TRUE}
-tauxerr=data.frame(matrix(unlist(eff_depth), nrow=length(eff_depth)))
-```
 
+
+
+
+> Bonus: On peut  evaluer les combinaisons des deux paramètres avec une grille de recherche  ( _grid search_)pour trouver la combinaison optimale.  
+
+> (  &#x26A0;&#xFE0F; ce calcul peut etre lent en fonction de la machine la cellule est désactivée dans ce notebook) 
+
+
+```{r echo=TRUE, eval=FALSE}
+xgb_grid = expand.grid(
+  eta = eta_s,
+  max_depth = max_depth_s,
+  nrounds=100,
+  #les params suivants sont les valeurs par défaut 
+  gamma=0,
+  colsample_bytree=1,
+  min_child_weight=1,
+  subsample=1
+  
+)
+
+xgb_trcontrol = trainControl(
+  method = "cv",
+  number = 3,
+  verboseIter = TRUE,                                                     
+  allowParallel = TRUE
+)
+
+xgb_train = train(
+  x = dtrainXG ,
+  y = as.factor(labels),
+  metric = "Accuracy",
+  tuneGrid = xgb_grid,
+  trControl = xgb_trcontrol,
+  method = "xgbTree"
+)
+
+xgb_train$finalModel
+```
 
 
 # <i class="fas fa-flag-checkered"></i> Conclusion
 
 
-Deux types d’algorithmes ont été abordés. Ceux reposants sur une construction aléatoires d’une famille de modèles : _bagging_ pour _bootstrap aggregating_ (Breiman 1996) et les forêts aléatoires (_random forests_) de Breiman (2001) qui propose une amélioration du bagging spécifique aux modèles définis par des arbres binaires (CART).  
+En conclusion on présente les performences des différents modèles qu'on a testé : 
+
+
+```{r echo=TRUE}
+set.seed(123)
+t_xgb <- taux.erreur(ypred =ifelse(predict(xgb.train(nrounds=100,
+                                                     data=dtrainXG,
+                                                     watchlist=w,
+                                                     objective = "binary:logistic",
+                                                     verbose = FALSE,
+                                                     params = list(eta=0.3, max_depth=10)),
+                                           dtestXG)>=0.5,1,0), yobs = ts_label   )
+
+
+comp_all <- data.frame(tx_er=round( c(t_boost_1,t_boost_2,t_boost_3,t_bag1,t_bag2,t_bag3,t_xgb),4),
+                    method=c("boosting_default","boosting_stump","boosting_profond",
+                             "bagging_default","bagging_stump","bagging_profond","xgboost")
+                    )
+
+
+hchart(comp_all, "column", hcaes(x = "method", y = "tx_er" ), colorByPoint= TRUE) %>% 
+  hc_plotOptions(
+    column= list(
+       dataLabels= list(
+                enabled= TRUE
+       )
+    )
+  )
+```
+
+
+On selectionne le meilleur algorithme  pour réaliser des prédistions sur la nouvelle base `746Data`
+
+
+```{r echo=TRUE}
+data746 <- read.csv("746Data.txt")
+new_df <- data.frame(matrix(unlist(strsplit(as.character(data746$Octamer),'',fixed=FALSE)), 
+                        nrow=length(strsplit(as.character(data746$Octamer),'',fixed=FALSE)),
+                        byrow=T))
+colnames(new_df)<-c('v1','v2','v3','v4','v5','v6','v7','v8')
+data746<- cbind(data746,new_df)[,-1]
+data746$Clived<-factor(data746$Clived,labels = c(0,1))
+head(data746)
+```
+
+On calcule ensuite le taux d'erreur de notre modèle : 
+
+```{r echo=TRUE}
+set.seed(123)
+# taux.erreur(predict(boosting(Clived ~., data=data.Train,  boos = TRUE,mfinal=20,control=rpart.control(maxdepth=20)),newdata = data746)$class,data746$Clived)
+
+testDM <- xgb.DMatrix(data = model.matrix(~.+0,data = data746[,2:9]),
+                      label   = as.numeric(data746$Clived)-1)
+
+
+
+taux.erreur(ypred =ifelse(predict(xgb.train(nrounds=100,
+                                                     data=dtrainXG,
+                                                     watchlist=w,
+                                                     objective = "binary:logistic",
+                                                     verbose = FALSE,
+                                                     params = list(eta=0.3, max_depth=10)),
+                                           testDM)>=0.5,1,0), yobs = as.numeric(data746$Clived)-1   )
+```
+
+
+
+
+Pour finir, deux types d’algorithmes ont été abordés. Ceux reposants sur une construction aléatoires d’une famille de modèles : _bagging_ pour _bootstrap aggregating_ (Breiman 1996) et les forêts aléatoires (_random forests_) de Breiman (2001) qui propose une amélioration du bagging spécifique aux modèles définis par des arbres binaires (CART).  
 Ceux basés sur le _boosting_ (Freundet Shapiro,1996) et qui reposent sur une construction adaptative, déterministe ou aléatoire, d’une famille de modèles. Ces algorithmes se sont développés à la frontière entre apprentissage machine ( _machine learning_ ) et Statistique.
 
-Les principes du bagging ou du boosting s’appliquent à toute méthode de modélisation (régression, CART, réseaux de neurones) mais n’ont d’intérêt, et réduisent sensiblement l’erreur de prévision, que dans le cas de modèles instables.Ils sont surtout mis en œuvre en association avec des arbres binaires comme modèles de base. En effet, l’instabilité déjà soulignés des arbres apparaît alors comme une propriété nécessaire à la réduction de la variance par agrégation de modèles.
+Les principes du bagging ou du boosting s’appliquent à toute méthode de modélisation (régression, CART, réseaux de neurones) mais n’ont d’intérêt, et réduisent sensiblement l’erreur de prévision, **que dans le cas de modèles instables**. Ils sont surtout mis en œuvre en association avec des arbres binaires comme modèles de base. En effet, l’instabilité déjà soulignés des arbres apparaît alors comme une propriété nécessaire à la réduction de la variance par agrégation de modèles.
 
 
