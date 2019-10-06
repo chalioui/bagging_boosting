@@ -19,7 +19,8 @@
 .menu ul li a {
     color: #AE2573;
     text-decoration: none;
-    font-size: 18px;
+    font-size: 15px;
+    font-weight: bold;
     
 }
 .menu ul li {
